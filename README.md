@@ -38,3 +38,12 @@ SQL Database has a huge advantage over the temporary storage variables list, tup
 Cryptography
 ============
 DES encryption have been deployed in the detabase of the application.
+
+
+To access:
+-------------------------
+Username	Password
+-------------------------
+admin		123456
+customer	customer
+-------------------------
