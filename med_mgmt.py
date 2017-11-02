@@ -1,20 +1,19 @@
-from Tkinter import *
+from tkinter import *
 import time
-from sqlite3 import dbapi2 as sqlite
-##import bluetooth
+import sqlite3
 import random
 import tempfile
-##import win32api
-##import win32print
+import win32api
+import win32print
 
 f=''
 flag=''
 flags=''
 
-login=sqlite.connect("admin.sqlite")
+login=sqlite3.connect("admin.db")
 l=login.cursor()
 
-c=sqlite.connect("medicine.sqlite")
+c=sqlite3.connect("medicine.db")
 cur=c.cursor()
 
 columns=('Sl No', 'Name', 'Type', 'Quantity Left', 'Cost', 'Purpose', 'Expiry Date', 'Rack location', 'Manufacture')
@@ -24,7 +23,7 @@ def open_win(): #OPENS MAIN MENU------------------------------------------------
     flag='apt'
     apt=Tk()
     apt.title("Interface")
-    Label(apt, text="MEDPLUS CHEMIST AND DRUGGIST").grid(row=0,column=0,columnspan=3)
+    Label(apt, text="CHEMIST AND DRUGSHOP").grid(row=0,column=0,columnspan=3)
     Label(apt, text='*'*80).grid(row=1,column=0,columnspan=3)
     Label(apt, text='-'*80).grid(row=3,column=0,columnspan=3) 
 
@@ -83,26 +82,28 @@ def ren():
     cur.execute("select *from med")
     for i in cur:
         cx+=1
-        lb1.insert(cx,i[0]+'  '+i[1])
-        lb2.insert(cx,i[3]+'  '+i[6]+'  '+i[4])
+        s1=[str(i[0]),str(i[1])]
+        s2=[str(i[3]),str(i[6]),str(i[4])]
+        lb1.insert(cx,'. '.join(s1))
+        lb2.insert(cx,'   '.join(s2))
     c.commit()
     lb1.bind('<<ListboxSelect>>', sel_del)
 
 def sel_del(e):
     global lb1, d, cur, c,p, sl2
     p=lb1.curselection()
-    print p
+    print (p)
     x=0
     sl2=''
     cur.execute("select * from med")
     for i in cur:
-        print x, p[0]
+        print (x, p[0])
         if x==int(p[0]):
             sl2=i[0]
             break
         x+=1
     c.commit()
-    print sl2
+    print (sl2)
     Label(d,text=' ',bg='white', width=20).grid(row=0,column=1)
     cur.execute('Select * from med')
     for i in cur:
@@ -143,7 +144,7 @@ def modify():    # window for modification--------------------------------------
     cur.execute("select *from med")
     for i in cur:
         cx+=1
-        name_.insert(cx,i[0]+'.  '+i[1])
+        name_.insert(cx,(str(i[0])+'.  '+str(i[1])))
         name_.grid(row=1,column=1,columnspan=2)
     c.commit()
     name_.bind('<MouseWheel>',onmousewheel)
@@ -172,20 +173,20 @@ def sel_mn(e):
     global n,name_, name_mn, sl, c, cur
     name_mn=''
     p=name_.curselection()
-    print p
+    print (p)
     x=0
     sl=''
     cur.execute("select * from med")
     for i in cur:
-        print x, p[0]
+        print (x, p[0])
         if x==int(p[0]):
             sl=i[0]
             break
         x+=1
     c.commit()
-    print sl
+    print (sl)
     name_nm=n[int(sl)]
-    print name_nm
+    print (name_nm)
     
 def show_val():
     global st, name_mn, att, cur, c, col, col_n, sl
@@ -224,7 +225,7 @@ def stock():    #add to stock window--------------------------------------------
         Label(sto,width=15,text=' '*(14-len(str(columns[i])))+str(columns[i])+':').grid(row=i+2,column=0)
         accept[i]=Entry(sto)
         accept[i].grid(row=i+2, column=1)
-    Button(sto,width=15,text='Submit',command=chk).grid(row=12,column=1)
+    Button(sto,width=15,text='Submit',command=submit).grid(row=12,column=1)
     Label(sto,text='-'*165).grid(row=13,column=0,columnspan=7)
     Button(sto,width=15,text='Reset',command=reset).grid(row=12,column=0)
     Button(sto,width=15,text='Refresh stock',command=ref).grid(row=12,column=4)
@@ -278,7 +279,8 @@ def ref(): # creates a multi-listbox manually to show the whole database
     cur.execute("select *from med")
     for i in cur:
         cx+=1
-        lb1.insert(cx,i[0]+'. '+i[1])
+        seq=(str(i[0]),str(i[1]))
+        lb1.insert(cx,'. '.join(seq))
         lb2.insert(cx,i[2])
         lb3.insert(cx,i[3])
         lb4.insert(cx,i[4])
@@ -307,7 +309,7 @@ def submit(): #for new stock submission
     cur.execute("select * from med")
     c.commit()
     now=time.clock()
-    print now-prev
+    print (now-prev)
     top=Tk()
     Label(top,width=20, text='Success!').pack()
     top.mainloop()
@@ -333,6 +335,8 @@ def exp_date(): # expiry window open--------------------------------------------
     global exp, s,c, cur, flag, apt, flags
     apt.destroy()
     flag='exp'
+    from datetime import date
+    now=time.localtime()
     n=[]
     cur.execute("select *from med")
     for i in cur:
@@ -355,16 +359,27 @@ def exp_date(): # expiry window open--------------------------------------------
     exp.mainloop()
 
 def s_exp():    # shows the expiry date of the medicine entered
-    global c, cur, s, exp
+    global c, cur, s, exp, top
+    from datetime import date
+    now=time.localtime()
+    d1 = date(now[0],now[1],now[2])
     cur.execute("select * from med")
     for i in cur:
         if(i[1]==s.get()):
-            Label(exp, text=i[6]).grid(row=3, column=2)
+            q=i[6]
+            d2=date(int('20'+q[8:10]),int(q[3:5]),int(q[0:2]))
+            if d1>d2:
+                Label(exp, text='EXPIRED! on '+i[6]).grid(row=3, column=2)
+                top=Tk()
+                Label(top, text='EXPIRED!').pack()
+            else:
+                Label(exp, text=i[6]).grid(row=3, column=2)
     c.commit()
 
 def exp_dt(): # shows medicine to expire in the coming week
-    global c, cur, exp
+    global c, cur, exp, top
     x=0
+    z=1
     from datetime import datetime, timedelta 
     N = 7
     dt = datetime.now() + timedelta(days=N)
@@ -373,14 +388,19 @@ def exp_dt(): # shows medicine to expire in the coming week
     now=time.localtime()
     d1 = date(now[0],now[1],now[2])
     d3 = date(int(d[0:4]),int(d[5:7]),int(d[8:10]))
+    Label(exp,text='S.No'+'   '+'Name'+'     Qty.    '+'Exp_date').grid(row=6,column=0,columnspan=2)
     cur.execute("select * from med")
     for i in cur:
         s=i[6]
-        d2=date(int('20'+s[6:8]),int(s[3:5]),int(s[0:2]))
-
+        d2=date(int('20'+s[8:10]),int(s[3:5]),int(s[0:2]))
+        
         if d1<d2<d3:
-            Label(exp,text=i[0]+'. '+i[1]+'  '+i[6]).grid(row=x+6,column=0,columnspan=2)
+            Label(exp,text=str(z)+'.      '+str(i[1])+'    '+str(i[3])+'    '+str(i[6])).grid(row=x+7,column=0,columnspan=2)
             x+=1
+            z+=1
+        elif d1>d2:
+            top=Tk()
+            Label(top,width=20, text=str(i[1])+' is EXPIRED!').pack()
     c.commit()
     
 def billing(): # to create bills for customer-------------------------------------------------------------BILLING system
@@ -396,7 +416,10 @@ def billing(): # to create bills for customer-----------------------------------
     for i in cur:
         n.append(i[1])
     c.commit()
-    apt.destroy()
+    if flag=='st':
+        st.destroy()
+    else:
+        apt.destroy()
     flag='st'
     st=Tk()
     st.title('BILLING SYSTEM')
@@ -407,10 +430,10 @@ def billing(): # to create bills for customer-----------------------------------
     Label(st,text='Enter Address: ').grid(row=2,column=0)
     add=Entry(st)
     add.grid(row=2, column=1)
-    Button(st,text='Check V.C.', command=blue).grid(row=4, column=0)
     Label(st,text="Value Id (if available)").grid(row=3, column=0)
     vc_id=Entry(st)
     vc_id.grid(row=3, column=1)
+    Button(st,text='Check V.C.', command=blue).grid(row=4, column=0)
     Label(st,text='-'*115).grid(row=6, column=0,columnspan=7)
     Label(st,text='SELECT PRODUCT',width=25,relief='ridge').grid(row=7, column=0)
     Label(st,text=' RACK  QTY LEFT     COST          ',width=25,relief='ridge').grid(row=7, column=1)
@@ -421,7 +444,7 @@ def billing(): # to create bills for customer-----------------------------------
     refresh()
     Button(st,width=15,text='Main Menu', command=main_menu).grid(row=1,column=6)
     Button(st,width=15,text='Refresh Stock', command=refresh).grid(row=3,column=6)
-    Button(st,width=15,text='Reset Bill', command=renew).grid(row=4,column=6)
+    Button(st,width=15,text='Reset Bill', command=billing).grid(row=4,column=6)
     Button(st,width=15,text='Print Bill', command=print_bill).grid(row=5,column=6)
     Button(st,width=15,text='Save Bill', command=make_bill).grid(row=7,column=6)
     
@@ -449,8 +472,8 @@ def refresh():
     cur.execute("select *from med")
     for i in cur:
         cx+=1
-        lb1.insert(cx,i[0]+' '+i[1])
-        lb2.insert(cx,' '+i[7]+'        '+i[3]+'             Rs '+i[4])
+        lb1.insert(cx,str(i[0])+'. '+str(i[1]))
+        lb2.insert(cx,' '+str(i[7])+'        '+str(i[3])+'             Rs '+str(i[4]))
     c.commit()
     lb1.bind('<<ListboxSelect>>', select_mn)
 
@@ -459,65 +482,60 @@ def select_mn(e): #store the selected medicine from listbox
     p=lb1.curselection()
     x=0
     sl1=''
+    from datetime import date
+    now=time.localtime()
+    d1 = date(now[0],now[1],now[2])
     cur.execute("select * from med")
     for i in cur:
         if x==int(p[0]):
             sl1=int(i[0])
             break
-        x+=1
+        x+=1    
     c.commit()
-    print sl1
+    print (sl1)
     nm=n[x]
-    print nm
+    print (nm)
     
 def append2bill(): # append to the bill
     global st, names, nm , qty, sl,cur, c, sl1
     sl.append(sl1)
     names.append(nm)
     qty.append(qtys.get())
-    print qty
-    print sl[len(sl)-1],names[len(names)-1],qty[len(qty)-1]
+    print (qty)
+    print (sl[len(sl)-1],names[len(names)-1],qty[len(qty)-1])
     
 def blue(): # check if valued customer
     global st ,c, cur, named, addd, t, vc_id
     cur.execute("select * from cus")
     for i in cur:
-        if vc_id.get()!='' and vc_id.get()==i[3]:
+        if vc_id.get()!='' and int(vc_id.get())==i[2]:
             named=i[0]
             addd=i[1]
             Label(st,text=named,width=20).grid(row=1, column=1)
             Label(st,text=addd,width=20).grid(row=2, column=1)
-            Label(st,text=i[3],width=20).grid(row=3, column=1)
-            Label(st, text='Valued Customer!').grid(row=4, column=1)
-            t=1
-            break
-        elif i[2] in bluetooth.discover_devices():
-            named=i[0]
-            addd=i[1]
-            Label(st,text=named,width=20).grid(row=1, column=1)
-            Label(st,text=addd,width=20).grid(row=2, column=1)
-            Label(st,text=i[3],width=20).grid(row=3, column=1)
+            Label(st,text=i[2],width=20).grid(row=3, column=1)
             Label(st, text='Valued Customer!').grid(row=4, column=1)
             t=1
             break
     c.commit()
 
 def make_bill(): # makes bill
-    global t, c, cur, st, names, qty, sl , named, addd, name1, add,det, vc_id
+    global t, c, B, cur, st, names, qty, sl , named, addd, name1, add,det, vc_id
     price=[0.0]*10
     q=0
     det=['','','','','','','','']
     det[2]=str(sl)
     for i in range(len(sl)):
-        print sl[i],' ',qty[i],' ',names[i]
+        print (sl[i],' ',qty[i],' ',names[i])
     for k in range(len(sl)):
         cur.execute("select * from med where sl_no=?",(sl[k],))
         for i in cur:
             price[k]=int(qty[k])*float(i[4])
-            print qty[k],price[k]
+            print (qty[k],price[k])
             cur.execute("update med set qty_left=? where sl_no=?",(int(i[3])-int(qty[k]),sl[k]))
         c.commit()
     det[5]=str(random.randint(100,999))
+    B='bill_'+str(det[5])+'.txt'
     total=0.00
     for i in range(10):
         if price[i] != '':
@@ -526,7 +544,7 @@ def make_bill(): # makes bill
     m+="===============================================\n"
     m+="                                  No :%s\n\n" % det[5]
     m+="          MEDPLUS CHEMIST AND DRUGGIST\n"
-    m+="  34, M.G. Road, Kolkata-700 014, West Bengal\n\n"
+    m+="  VIT University, Katpadi, Vellore, T.M.\n\n"
     m+="-----------------------------------------------\n"
     if t==1:
         m+="Name: %s\n" % named
@@ -536,7 +554,7 @@ def make_bill(): # makes bill
         cur.execute('select * from cus')
         for i in cur:
             if i[0]==named:
-                det[7]=i[3]
+                det[7]=i[2]
     else:
         m+="Name: %s\n" % name1.get()
         m+="Address: %s\n" % add.get()
@@ -565,25 +583,19 @@ def make_bill(): # makes bill
     m+="-----------------------------------------------\n\n"
     m+="Dealer 's signature:___________________________\n"
     m+="===============================================\n"
-    print m
+    print (m)
     p=time.localtime()
     det[4]=str(p[2])+'/'+str(p[1])+'/'+str(p[0])
     det[6]=m
-    bill=open('bill.txt','w')
+    bill=open(B,'w')
     bill.write(m)
     bill.close()
     cb=('cus_name','cus_add','items','Total_cost','bill_dt','bill_no','bill','val_id')
     cur.execute('insert into bills values(?,?,?,?,?,?,?,?)',(det[0],det[1],det[2],det[3],det[4],det[5],det[6],det[7]))
     c.commit()
     
-def renew():
-    global sl, names, qty
-    sl=[]
-    names=[]
-    qty=[]
-    
 def print_bill():
-    win32api.ShellExecute (0,"print",'bill.txt','/d:"%s"' % win32print.GetDefaultPrinter (),".",0)
+    win32api.ShellExecute (0,"print",B,'/d:"%s"' % win32print.GetDefaultPrinter (),".",0)
     
 def show_rev(): # opens revenue window-----------------------------------------------------------------------TOTAL REVENUE
     global c, cur, flag,rev
@@ -598,7 +610,7 @@ def show_rev(): # opens revenue window------------------------------------------
     for i in cur:
         if i[4]==today:
             total+=float(i[3])
-    print total
+    print (total)
     Label(rev,width=22,text='Total revenue: Rs '+str(total), bg='black',fg='white').grid(row=1,column=0)
     cx=0
     vsb=Scrollbar(orient='vertical')
@@ -610,7 +622,7 @@ def show_rev(): # opens revenue window------------------------------------------
     for i in cur:
         if i[4]==today:
             cx+=1
-            lb1.insert(cx,'Bill No.: '+i[5]+'    : Rs '+i[3])
+            lb1.insert(cx,'Bill No.: '+str(i[5])+'    : Rs '+str(i[3]))
     c.commit()
     Button(rev,text='Main Menu',command=main_menu).grid(row=15,column=0)
     rev.mainloop()
@@ -648,7 +660,7 @@ def search_med():
     x=0
     for i in cur:
         if i[5]==sym.get():
-            y.append(i[0]+'. '+i[1]+'  Rs '+i[4]+'    Rack : '+i[7]+'    Mfg : '+i[8])
+            y.append(str(i[0])+'. '+str(i[1])+'  Rs '+str(i[4])+'    Rack : '+str(i[7])+'    Mfg : '+str(i[8]))
             x=x+1
     top=Tk()
     for i in range(len(y)):
@@ -661,8 +673,6 @@ def val_cus():  #to enter new valued customer-----------------------------------
     global val, flag, dbt, name_vc, add_vc, cur, c, vc_id
     apt.destroy()
     cur.execute("select * from cus")
-    for i in cur:
-        vc_id=int(i[3])+1
     flag='val'
     val=Tk()
     Label(val,text="ENTER VALUED CUSTOMER DETAILS").grid(row=0,column=0,columnspan=3)
@@ -674,43 +684,31 @@ def val_cus():  #to enter new valued customer-----------------------------------
     add_vc=Entry(val)
     add_vc.grid(row=3, column=1)
     Label(val,text="Value Id: ").grid(row=4,column=0)
-    Label(val,text=vc_id).grid(row=4,column=1)
-    Label(val,text="phone mac id: ").grid(row=5,column=0)
-    Button(val,text="Select ", command=check_bt).grid(row=5,column=2)
+    vc_id=Entry(val)
+    vc_id.grid(row=4, column=1)
+    Button(val,text='Submit',command=val_get).grid(row=5, column=1)
+    Button(val,text='Main Menu',command=main_menu).grid(row=5, column=2)
     Label(val,text='-'*60).grid(row=6,column=0,columnspan=3)
-    Button(val,text='Submit',command=val_get).grid(row=7, column=1)
-    Button(val,text='Main Menu',command=main_menu).grid(row=7, column=2)
-    Label(val,text='-'*60).grid(row=8,column=0,columnspan=3)
     val.mainloop()
 
 def val_get():  #to submit new valued customer details
-    global name_vc, add_vc, val, dbt ,c, cur, apt, vc_id, d
-    cur.execute("insert into cus values(?,?,?,?)",(name_vc.get(),add_vc.get(),d, vc_id))
+    global name_vc, add_vc, val, dbt ,c, cur, apt, vc_id
+    cur.execute("insert into cus values(?,?,?)",(name_vc.get(),add_vc.get(),vc_id.get()))
+    l.execute("insert into log values(?,?)",(name_vc.get(),vc_id.get()))
     cur.execute("select * from cus")
     for i in cur:
-        print i[0], i[1], i[2], i[3]
+        print (i[0], i[1], i[2])
     c.commit()
-    
-def check_bt():
-    global devs, sel, val
-    devs=bluetooth.discover_devices(lookup_names=True)
-    Label(val,text='Select Your Phone Mac id:').grid(row=9,column=0,columnspan=3)
-    for i in range(len(devs)):
-        Button(val,text=devs[i][1]+'  '+devs[i][0],command=lambda x=devs[i][0]: select(x)).grid(row=10+i,column=0,columnspan=3)
-        
-def select(x):
-    global val, d
-    Label(val,text=x).grid(row=5,column=1)
-    d=x
+    login.commit()
     
 def again():    #for login window-----------------------------------------------------------------------------LOGIN WINDOW
     global un, pwd, flag, root, apt
     if flag=='apt':
         apt.destroy()
     root=Tk()
-    root.title('MEDPLUS SOFTWARE SOLUTIONS')
-    Label(root,text='MEDPLUS CHEMIST AND DRUGGIST').grid(row=0,column=0,columnspan=5)
-    Label(root,text="34, M.G. Road, Kolkata-700 014, West Bengal").grid(row=1,column=0,columnspan=5)
+    root.title('YashVone SOFTWARE SOLUTIONS')
+    Label(root,text='CHEMIST AND DRUG SHOP').grid(row=0,column=0,columnspan=5)
+    Label(root,text="VIT UNIVERSITY, KATPADI, VELLORE,  TM").grid(row=1,column=0,columnspan=5)
     Label(root,text='-------------------------------------------------------').grid(row=2,column=0,columnspan=5)
     Label(root, text='Username').grid(row=3, column=0)
     un=Entry(root,width=10)
@@ -734,10 +732,6 @@ def check():    #for enter button in login window
         elif i[0]==u and i[1]==p:
             root.destroy()
             open_cus()
-        elif i[0]==u or i[1]==p:
-            top=Tk()
-            Label(top,width=30, text='Wrong Password or Username').grid(row=0, column=0)
-            top.mainloop()
     login.commit()
 
 def main_menu(): #controls open and close of main menu window----------------------------------------RETURN TO MAIN MENU
@@ -781,8 +775,12 @@ def open_cus(): #OPENS MAIN MENU------------------------------------------------
     Button(apt,text='Expiry Check', width=15, command=exp_date).grid(row=7,column=0)
     
     Label(apt, text='-'*40).grid(row=8,column=0)    
-    Button(apt,text='Logout',command=again).grid(row=9, column=0)
+    Button(apt,text='Logout',command=again1).grid(row=9, column=0)
     apt.mainloop()
-
+def again1():
+    global flags
+    apt.destroy()
+    flags=''
+    again()
 again()
 
