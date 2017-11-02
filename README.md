@@ -22,10 +22,6 @@ Python is an interpreter, object-oriented, high-level programming language with 
 
 Tkinter GUI & PySQL Database access has been immensly used to design this software.
 
-Bluetooth Technology
-====================
-Bluetooth Technology has its own benefits- wireless synchronization, economical, universally accepted, low power consumption, avoids interference from other devices, faster data sharing and it simplifies communication. Bluetooth devices connect to each other irrespective of their model. Setting up Bluetooth connectivity is automatic. Bluetooth and doesn’t need professionals.
-
 The software is designed to use this technology due to the above said reasons, to connect to the valued customers securely.
 
 SQL
@@ -35,15 +31,10 @@ When coding an application, the decision to use SQL is a requirement for dynamic
 We have used PySQL Database access for safe and secure storage of stock data.
 SQL Database has a huge advantage over the temporary storage variables list, tuples and dictionaries in python which has been explained in the next section.
 
-Cryptography
-============
-DES encryption have been deployed in the detabase of the application.
-
-
 To access:
 -------------------------
 Username	Password
 -------------------------
-admin		123456
+admin		admin
 customer	customer
 -------------------------
