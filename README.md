@@ -1,11 +1,11 @@
 med-store-management
 ====================
 
-Medicine Store Management System with Bluetooth customer verification support (Python, SQL, Cryptography, Bluetooth technology, Tkinter GUI)
+Medicine Store Management System customer verification support (Python, SQL, Tkinter GUI)
 
 Abstract
 ========
-Increasing health concerns among people demands efficiency in Medical Stores. The need to migrate from originally paper-based to electronic notebooks with data storage, computational features and reliable electronic documentation has aroused. For this project, I have designed a Medical Store Management System based on Python MySQL Database Access for small businesses. The software with an easy to use interface has been designed to allow stock maintenance, database access and electronic documentation for billing purposes with valued customer support. The software has been programmed to use Bluetooth Technology to connect to the valued customers for identification. These features have been later used to compute discounts for customers, daily revenues, and determine steps to prevent potential revenue loss. Being an open source software it can be used by a wide variety of retail and wholesale outlets to automate the process of manually maintaining the records and cash flows. The results have been potentially generalisable. This software saves your time and money.
+Increasing health concerns among people demands efficiency in Medical Stores. The need to migrate from originally paper-based to electronic notebooks with data storage, computational features and reliable electronic documentation has aroused. For this project, I have designed a Medical Store Management System based on Python MySQL Database Access for small businesses. The software with an easy to use interface has been designed to allow stock maintenance, database access and electronic documentation for billing purposes with valued customer support. These features have been later used to compute discounts for customers, daily revenues, and determine steps to prevent potential revenue loss. Being an open source software it can be used by a wide variety of retail and wholesale outlets to automate the process of manually maintaining the records and cash flows. The results have been potentially generalisable. This software saves your time and money.
 
 Motivation
 ==========
